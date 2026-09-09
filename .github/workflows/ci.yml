@@ -1,44 +1,31 @@
-name: Representative CI
+name: Issue event probe
 
 on:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
-  workflow_dispatch:
+  issues:
+    types: [opened]
+  issue_comment:
+    types: [created]
 
 permissions:
   contents: read
 
 jobs:
-  test:
-    name: Test (Node ${{ matrix.node }})
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    strategy:
-      fail-fast: false
-      matrix:
-        node: ['20', '22']
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: ${{ matrix.node }}
-      - name: Run duration tests
-        run: npm test
-      - name: Identify tested source
-        run: git rev-parse HEAD
-
-  complete:
-    name: All tests passed
-    needs: test
+  probe:
+    name: Issue payload and checkout
+    if: ${{ !github.event.issue.pull_request && startsWith(github.event.issue.title, 'LAB issue-events ') }}
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - name: Verify dependency result
+      - uses: actions/checkout@v4
+      - name: Assert executed event and source
         env:
-          TEST_RESULT: ${{ needs.test.result }}
-          EVENT_NAME: ${{ github.event_name }}
-        run: |
-          test "$TEST_RESULT" = success
-          echo "E2E_COMPLETE: event=$EVENT_NAME tests=$TEST_RESULT"
+          PROBE_EVENT: ${{ github.event_name }}
+          PROBE_ACTION: ${{ github.event.action }}
+          PROBE_REF: ${{ github.ref }}
+          PROBE_SHA: ${{ github.sha }}
+          PROBE_WORKFLOW_REF: ${{ github.workflow_ref }}
+          PROBE_WORKFLOW_SHA: ${{ github.workflow_sha }}
+          PROBE_ISSUE: ${{ github.event.issue.number }}
+          PROBE_COMMENT: ${{ github.event.comment.id }}
+          PROBE_TOKEN: ${{ github.token }}
+        run: python3 event_probe.py
