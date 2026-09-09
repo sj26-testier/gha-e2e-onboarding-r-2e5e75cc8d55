@@ -3,6 +3,7 @@ import json
 import os
 from pathlib import Path
 import subprocess
+import sys
 import urllib.request
 
 
@@ -32,9 +33,13 @@ def inspect(event, env, checkout):
 
 
 if __name__ == '__main__':
-    payload = json.loads(Path(os.environ['GITHUB_EVENT_PATH']).read_text())
+    context_control = sys.argv[1:] == ['--context-control']
+    payload = json.loads(os.environ['PROBE_PAYLOAD'] if context_control else
+                         Path(os.environ['GITHUB_EVENT_PATH']).read_text())
     checkout = subprocess.check_output(['git', 'rev-parse', 'HEAD'], text=True).strip()
     result = inspect(payload, os.environ, checkout)
+    result['payload_transport'] = 'explicit-context-control' if context_control else 'GITHUB_EVENT_PATH'
+    result['github_event_path_present'] = bool(os.environ.get('GITHUB_EVENT_PATH'))
     token = os.environ['PROBE_TOKEN']
     assert token, 'workflow token missing'
     request = urllib.request.Request(
