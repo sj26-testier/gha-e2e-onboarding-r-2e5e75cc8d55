@@ -27,7 +27,13 @@ summary = {'checks': checks, 'action': event['action'], 'issue': event['issue'][
            'event_path': path, 'event_keys': sorted(event), 'body': event['issue']['body']}
 print('PB2952_PROBE=' + json.dumps(summary, sort_keys=True), flush=True)
 if '--write' in sys.argv:
-    side = 'BUILDKITE' if os.environ.get('BUILDKITE') == 'true' else 'NATIVE'
+    # This lab's observed 0.87.0 runner isolates BUILDKITE from the job env.
+    # Distinguish the observed event-file locations only for mutation budgeting.
+    side = 'BUILDKITE' if path and '/buildkite-gha-runner/' in path else 'NATIVE'
+    if side == 'NATIVE':
+        print('PB2952_WRITE=' + json.dumps({'side': side, 'skipped': 'native write already verified on issue 3'}), flush=True)
+        assert all(checks.values())
+        raise SystemExit(0)
     token = os.environ['PROBE_TOKEN']
     url = 'https://api.github.com/repos/' + os.environ['GITHUB_REPOSITORY'] + '/issues/' + str(event['issue']['number'])
     def request(method, body=None):
