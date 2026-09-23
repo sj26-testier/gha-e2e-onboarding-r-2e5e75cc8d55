@@ -1,7 +1,7 @@
-name: PB2952 context
+name: PB2952 closed negative
 on:
   issues:
-    types: [opened, edited]
+    types: [closed]
 permissions:
   contents: read
 jobs:

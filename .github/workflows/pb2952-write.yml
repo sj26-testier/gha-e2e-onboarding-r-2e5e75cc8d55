@@ -1,9 +1,10 @@
-name: PB2952 context
+name: PB2952 write
 on:
   issues:
-    types: [opened, edited]
+    types: [opened]
 permissions:
   contents: read
+  issues: write
 jobs:
   probe:
     if: startsWith(github.event.issue.title, 'LAB PB2952 ')
@@ -13,4 +14,5 @@ jobs:
       - name: Assert full issue context and immutable checkout
         env:
           PROBE_EVENT: ${{ toJSON(github.event) }}
-        run: python3 pb2952_probe.py
+          PROBE_TOKEN: ${{ github.token }}
+        run: python3 pb2952_probe.py --write
