@@ -1,7 +1,7 @@
-name: PB3469 issues probe
+name: PB3469 comment probe
 on:
-  issues:
-    types: [opened, edited]
+  issue_comment:
+    types: [created]
 permissions:
   contents: read
 jobs:

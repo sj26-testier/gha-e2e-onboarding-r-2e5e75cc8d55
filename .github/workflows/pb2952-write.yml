@@ -1,4 +1,4 @@
-name: PB2952 write
+name: PB3469 writer
 on:
   issues:
     types: [opened]
@@ -7,12 +7,12 @@ permissions:
   issues: write
 jobs:
   probe:
-    if: startsWith(github.event.issue.title, 'LAB PB2952 ')
+    if: startsWith(github.event.issue.title, 'LAB PB3469 ') && !github.event.issue.pull_request
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Assert full issue context and immutable checkout
+      - name: Assert full event context and immutable checkout
         env:
           PROBE_EVENT: ${{ toJSON(github.event) }}
           PROBE_TOKEN: ${{ github.token }}
-        run: python3 pb2952_probe.py --write
+        run: python3 pb3469_probe.py --write

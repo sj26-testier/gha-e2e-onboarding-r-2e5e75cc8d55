@@ -1,4 +1,4 @@
-name: PB2952 closed negative
+name: PB3469 closed negative
 on:
   issues:
     types: [closed]
@@ -6,11 +6,11 @@ permissions:
   contents: read
 jobs:
   probe:
-    if: startsWith(github.event.issue.title, 'LAB PB2952 ')
+    if: startsWith(github.event.issue.title, 'LAB PB3469 ') && !github.event.issue.pull_request
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Assert full issue context and immutable checkout
+      - name: Assert full event context and immutable checkout
         env:
           PROBE_EVENT: ${{ toJSON(github.event) }}
-        run: python3 pb2952_probe.py
+        run: python3 pb3469_probe.py
